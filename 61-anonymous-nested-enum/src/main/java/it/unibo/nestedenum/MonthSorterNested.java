@@ -10,39 +10,76 @@ import java.util.Objects;
 public final class MonthSorterNested implements MonthSorter {
 
     public enum Month {
-        GENNAIO("Gennaio", 31),
-        FEBBRAIO("Febbraio", 28),
-        MARZO("Marzo", 31),
-        APRILE("Aprile", 30),
-        MAGGIO("Maggio", 31),
-        GIUGNO("Giugno", 30),
-        LUGLIO("Luglio", 31),
-        AGOSTO("Agosto", 31),
-        SETTEMBRE("Settembre", 30),
-        OTTOBRE("Ottobre", 31),
-        NOVEMBRE("Novembre", 30),
-        DICEMBRE("Dicembre", 31);
+        GENNAIO(31),
+        FEBBRAIO(28),
+        MARZO(31),
+        APRILE(30),
+        MAGGIO(31),
+        GIUGNO(30),
+        LUGLIO(31),
+        AGOSTO(31),
+        SETTEMBRE(30),
+        OTTOBRE(31),
+        NOVEMBRE(30),
+        DICEMBRE(31);
 
-        private final String actualName;
         private final int days;
 
-        private Month(final String actualName, final int days){
-            this.actualName = actualName;
+        private Month(final int days){
             this.days = days;
         }
 
-        /*public String fromString(String name){
-            
-        }*/
+        public static Month fromString(final String name){
+            Objects.requireNonNull(name);
+            try {
+                return valueOf(name);
+            } catch (IllegalArgumentException e) {
+                Month match = null;
+                for (final Month month : values()) {
+                    if (month.toString().toLowerCase(Locale.ROOT).startsWith(name.toLowerCase(Locale.ROOT))) {
+                        if (match != null) {
+                            throw new IllegalArgumentException(
+                                name + " is ambiguos: both " + month + " and " + match + " would be valid matches", e
+                            );
+                        }
+                        match = month;
+                    }
+                }
+                if (match == null) {
+                    throw new IllegalArgumentException("No matching argument for " + name, e);
+                }
+                return match;
+            }
+        }
     }
 
     @Override
     public Comparator<String> sortByDays() {
-        return null;
+        return new SortByDate();
     }
 
     @Override
     public Comparator<String> sortByOrder() {
-        return null;
+        return new SortByMonthOrder();
+    }
+
+    public static class SortByDate implements Comparator<String> {
+
+        @Override
+        public int compare(final String arg0, final String arg1) {
+            final Month s1 = Month.fromString(arg1);
+            final Month s2 = Month.fromString(arg1);
+            return Integer.compare(s1.days, s2.days);
+        }
+
+    }
+
+    public static class SortByMonthOrder implements Comparator<String> {
+
+        @Override
+        public int compare(String arg0, String arg1) {
+            return Month.fromString(arg0).compareTo(Month.fromString(arg1));
+        }
+
     }
 }
